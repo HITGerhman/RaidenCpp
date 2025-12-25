@@ -1,0 +1,24 @@
+# --- 忽略编译生成的临时文件 ---
+build/
+bin/
+obj/
+temp/
+library/
+local/
+
+# --- 忽略 IDE 配置文件 ---
+.vscode/
+.idea/
+*.sln
+*.suo
+*.user
+*.sdf
+*.ipch
+
+# --- 忽略系统生成文件 ---
+.DS_Store
+Thumbs.db
+
+# --- 忽略 Android 编译文件 ---
+proj.android/app/build/
+proj.android/app/.cxx/
