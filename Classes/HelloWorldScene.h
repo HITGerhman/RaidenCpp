@@ -11,6 +11,12 @@ public:
     
     // 这是 Cocos 的宏，用于实现 create() 方法
     CREATE_FUNC(HelloWorld);
+    // 新增：发射子弹的函数 (参数 dt 是两帧之间的时间间隔，Cocos 调度器标准格式)
+    void updateFire(float dt);
+
+    private:
+    // 新增：保存主角的指针，方便在其他函数里访问它
+    cocos2d::Node* _player;
 };
 
 #endif // __HELLOWORLD_SCENE_H__
