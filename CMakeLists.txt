@@ -29,6 +29,9 @@ set(APP_NAME RaidenCpp)
 
 project(${APP_NAME})
 
+# 强制 MSVC 编译器使用 UTF-8 编码，解决乱码问题
+add_compile_options("$<$<CXX_COMPILER_ID:MSVC>:/utf-8>")
+
 if(XCODE)
     if(NOT DEFINED CMAKE_XCODE_ATTRIBUTE_IPHONEOS_DEPLOYMENT_TARGET)
         SET (CMAKE_XCODE_ATTRIBUTE_IPHONEOS_DEPLOYMENT_TARGET 8.0)

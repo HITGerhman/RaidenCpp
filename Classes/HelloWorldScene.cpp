@@ -94,7 +94,8 @@ bool HelloWorld::init()
     // 语法：schedule(函数指针, 间隔时间, 重复次数, 延迟)
     // 这里意思是：每隔 0.2 秒调用一次 updateFire 函数
     this->schedule(CC_SCHEDULE_SELECTOR(HelloWorld::updateFire), 0.2f);
-
+    // [新增] 启动敌机生成器：每 1.0 秒召唤一个敌人
+    this->schedule(CC_SCHEDULE_SELECTOR(HelloWorld::spawnEnemy), 1.0f);
     CCLOG("Fire System Online!");
     return true;
     // ==========================================
@@ -142,4 +143,37 @@ void HelloWorld::updateFire(float dt)
 
     // 执行动作
     bullet->runAction(seq);
+}
+// [新增] 敌机生成逻辑
+void HelloWorld::spawnEnemy(float dt)
+{
+    auto visibleSize = Director::getInstance()->getVisibleSize();
+
+    // 1. 画一个敌机 (红色倒三角)
+    auto enemy = DrawNode::create();
+    Vec2 vertices[] = { Vec2(0, -30), Vec2(-20, 20), Vec2(20, 20) }; // 倒过来的三角形
+    enemy->drawSolidPoly(vertices, 3, Color4F::RED); // 红色
+    
+    // 给它设个名字，或者 tag，以后碰撞检测要用
+    enemy->setName("Enemy");
+
+    // 2. 随机出生位置
+    // RandomHelper 是 Cocos 自带的神器
+    float randomX = RandomHelper::random_real(30.0f, visibleSize.width - 30.0f);
+    
+    // 位置：屏幕最上方 (Y = height + 30)，X 是随机的
+    enemy->setPosition(Vec2(randomX, visibleSize.height + 30));
+    
+    this->addChild(enemy);
+
+    // 3. 制定行动路线 (向下飞到底)
+    // 目标 Y 值：飞出屏幕下方 (-50)
+    float flyTime = 2.0f; // 飞行时间，越小飞得越快
+    auto moveAction = MoveTo::create(flyTime, Vec2(randomX, -50));
+    
+    // 飞完就销毁 (内存回收)
+    auto removeAction = RemoveSelf::create();
+    
+    // 执行动作
+    enemy->runAction(Sequence::create(moveAction, removeAction, nullptr));
 }
