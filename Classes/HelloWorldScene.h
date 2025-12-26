@@ -15,6 +15,8 @@ public:
     void updateFire(float dt);
     // [新增] 生成敌人的函数
     void spawnEnemy(float dt);
+    // [新增] 碰撞检测主循环
+    void updateCollision(float dt);
 
     private:
     // 新增：保存主角的指针，方便在其他函数里访问它

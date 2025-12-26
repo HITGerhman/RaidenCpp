@@ -96,6 +96,8 @@ bool HelloWorld::init()
     this->schedule(CC_SCHEDULE_SELECTOR(HelloWorld::updateFire), 0.2f);
     // [新增] 启动敌机生成器：每 1.0 秒召唤一个敌人
     this->schedule(CC_SCHEDULE_SELECTOR(HelloWorld::spawnEnemy), 1.0f);
+    // [新增] 开启碰撞检测，update 每一帧都会调用
+    this->schedule(CC_SCHEDULE_SELECTOR(HelloWorld::updateCollision));
     CCLOG("Fire System Online!");
     return true;
     // ==========================================
@@ -118,6 +120,9 @@ void HelloWorld::updateFire(float dt)
     // --- A. 创建子弹 (画一个小黄点) ---
     auto bullet = DrawNode::create();
     bullet->drawDot(Vec2::ZERO, 5, Color4F::YELLOW); // 半径5的圆点
+
+    // [新增] 给子弹设置名字，这一步至关重要！
+    bullet->setName("Bullet");
     
     // 子弹位置 = 飞机当前位置 + 一点点向上的偏移(机头位置)
     Vec2 firePos = _player->getPosition() + Vec2(0, 50);
@@ -176,4 +181,93 @@ void HelloWorld::spawnEnemy(float dt)
     
     // 执行动作
     enemy->runAction(Sequence::create(moveAction, removeAction, nullptr));
+}
+// [新增] 碰撞检测的具体实现
+void HelloWorld::updateCollision(float dt)
+{
+    // 1. 获取场景中所有子节点
+    auto children = this->getChildren();
+
+    // 准备两个容器，用来暂存需要被销毁的子弹和敌人
+    // (注意：不能在遍历过程中直接 removeChild，会导致迭代器失效崩溃，所以要先记下来)
+    std::vector<Node*> bulletsToDelete;
+    std::vector<Node*> enemiesToDelete;
+
+    // 2. 遍历所有物体，寻找碰撞
+    for (auto child : children)
+    {
+        // 逻辑 A：子弹打敌人
+        if (child->getName() == "Bullet")
+        {
+            // 💀 修复核心：手动构造子弹的“判定框”
+            // 以子弹位置为中心，创造一个 20x20 的矩形
+            Rect bulletRect = Rect(
+                child->getPositionX() - 10, 
+                child->getPositionY() - 10, 
+                20, 20
+            // 再遍历一次所有物体，找敌人
+            );
+            for (auto target : children)
+            {
+                if (target->getName() == "Enemy")
+                {
+                    // 拿到敌人的包围盒
+                    // 💀 修复核心：手动构造敌人的“判定框”
+                    // 以敌人位置为中心，创造一个 40x40 的矩形
+                    Rect enemyRect = Rect(
+                        target->getPositionX() - 20, 
+                        target->getPositionY() - 20, 
+                        40, 40
+                    );
+
+                    // 核心判断：两个矩形是否相交？
+                    if (bulletRect.intersectsRect(enemyRect))
+                    {
+                        // 撞上了！记录下来，稍后删除
+                        bulletsToDelete.push_back(child);
+                        enemiesToDelete.push_back(target);
+                        
+                        // 这里可以加一个简单的爆炸特效 (画个橙色圆圈闪一下)
+                        auto boom = DrawNode::create();
+                        boom->drawDot(Vec2::ZERO, 30, Color4F::ORANGE);
+                        boom->setPosition(target->getPosition());
+                        this->addChild(boom);
+                        // 0.1秒后放大并消失
+                        boom->runAction(Sequence::create(
+                            ScaleTo::create(0.1f, 1.5f),
+                            RemoveSelf::create(),
+                            nullptr
+                        ));
+                    }
+                }
+            }
+        }
+        
+        // 逻辑 B：敌人撞主角 (简单的 Game Over 判定)
+        if (child->getName() == "Enemy" && _player)
+        {
+             Rect enemyRect = child->getBoundingBox();
+             Rect playerRect = _player->getBoundingBox();
+             
+             // 为了手感好一点，把主角的判定框缩小一点点 (Rect 缩小 10像素)
+             playerRect.origin.x += 10;
+             playerRect.size.width -= 20;
+
+             if (enemyRect.intersectsRect(playerRect))
+             {
+                 CCLOG("GAME OVER!");
+                 // 简单处理：主角变红，或者直接移除
+                 _player->runAction(Blink::create(1.0f, 5)); // 闪烁效果
+             }
+        }
+    }
+
+    // 3. 统一清理战场 (真正执行删除)
+    for (auto node : bulletsToDelete) {
+        // 加上判断防止重复删除
+        if(node->getParent()) node->removeFromParent();
+    }
+    for (auto node : enemiesToDelete) {
+        if(node->getParent()) node->removeFromParent();
+    }
 }
