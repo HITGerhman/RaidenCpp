@@ -17,7 +17,34 @@ bool HelloWorld::init()
     }
 
     auto visibleSize = Director::getInstance()->getVisibleSize();
-    Vec2 origin = Director::getInstance()->getVisibleOrigin();
+    //Vec2 origin = Director::getInstance()->getVisibleOrigin();
+    // 1. 创建第一张背景，放在屏幕中心
+    _bg1 = Sprite::create("background.png");
+    _bg1->setPosition(visibleSize.width / 2, visibleSize.height / 2);
+    // 计算缩放比例，让背景填满屏幕宽或高
+    // 这里我们简单粗暴地把它拉大一点，保证覆盖全屏
+    float scaleX = visibleSize.width / _bg1->getContentSize().width;
+    float scaleY = visibleSize.height / _bg1->getContentSize().height;
+    // 取较大的缩放比，保证填满
+    float finalScale = std::max(scaleX, scaleY);
+
+    // [关键修正] 获取“缩放后的实际高度”
+    // 实际高度 = 原始高度 * 缩放比例
+    float realHeight = _bg1->getContentSize().height * finalScale;
+    _bg1->setScale(finalScale);
+   
+    this->addChild(_bg1, -10); // Z轴设为 -10，保证在最底层
+
+    // 2. 创建第二张背景，放在第一张的“头顶”
+    // 注意：它的 Y 坐标 = 第一张的 Y 坐标 + 图片的高度
+    _bg2 = Sprite::create("background.png");
+    _bg2->setScale(finalScale);
+    _bg2->setPosition(visibleSize.width / 2, _bg1->getPositionY() + realHeight);
+
+    this->addChild(_bg2, -10);
+
+    // 3. 开启背景更新调度器
+    this->schedule(CC_SCHEDULE_SELECTOR(HelloWorld::updateBackground));
 
     // 1. Draw the Player (Triangle)
     // auto playerNode = DrawNode::create();
@@ -341,4 +368,31 @@ void HelloWorld::updatePlayerMovement(float dt)
     if(currentPos.y > visibleSize.height) currentPos.y = visibleSize.height;
 
     _player->setPosition(currentPos);
+}
+void HelloWorld::updateBackground(float dt)
+{
+    // 设定滚动速度 (像素/秒)，数值越大滚得越快
+    float scrollSpeed = 200.0f;
+
+    // 1. 让两张图都向下移动
+    _bg1->setPositionY(_bg1->getPositionY() - scrollSpeed * dt);
+    _bg2->setPositionY(_bg2->getPositionY() - scrollSpeed * dt);
+
+    // [关键修正] 动态获取当前的实际高度
+    // getScaleY() 会返回你刚才设置的 finalScale
+    float realHeight = _bg1->getContentSize().height * _bg1->getScaleY();
+
+    // 2. 检查第一张图是否完全跑出了屏幕下方
+    // 如果它的 Y 坐标 <= -(图片高度的一半)，说明它已经完全看不见了
+    if (_bg1->getPositionY() <= -realHeight / 2)
+    {
+        // 瞬移到 _bg2 的头顶 (用实际高度接力)
+        _bg1->setPositionY(_bg2->getPositionY() + realHeight);
+    }
+
+    if (_bg2->getPositionY() <= -realHeight / 2)
+    {
+        // 瞬移到 _bg1 的头顶
+        _bg2->setPositionY(_bg1->getPositionY() + realHeight);
+    }
 }

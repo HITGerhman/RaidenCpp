@@ -29,6 +29,13 @@ public:
 
     // [新增] 专门处理键盘移动的函数
     void updatePlayerMovement(float dt);
+
+    // [新增] 两张背景图
+    cocos2d::Sprite* _bg1;
+    cocos2d::Sprite* _bg2;
+
+    // [新增] 背景滚动逻辑函数
+    void updateBackground(float dt);
 };
 
 #endif // __HELLOWORLD_SCENE_H__
