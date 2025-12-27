@@ -21,6 +21,14 @@ public:
     private:
     // 新增：保存主角的指针，方便在其他函数里访问它
     cocos2d::Node* _player;
+    // [新增] 键盘按键状态标记
+    bool _isPressingW = false;
+    bool _isPressingS = false;
+    bool _isPressingA = false;
+    bool _isPressingD = false;
+
+    // [新增] 专门处理键盘移动的函数
+    void updatePlayerMovement(float dt);
 };
 
 #endif // __HELLOWORLD_SCENE_H__

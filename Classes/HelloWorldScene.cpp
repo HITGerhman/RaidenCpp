@@ -98,6 +98,37 @@ bool HelloWorld::init()
     // 5. 将监听器添加到事件分发器中
     _eventDispatcher->addEventListenerWithSceneGraphPriority(listener, this);
     // ==========================================
+    // [新增] 键盘监听器 (WASD)
+    // ==========================================
+    auto keyListener = EventListenerKeyboard::create();
+
+    // 当键被按下时：标记为 true
+    keyListener->onKeyPressed = [=](EventKeyboard::KeyCode code, Event* event){
+        switch(code){
+            case EventKeyboard::KeyCode::KEY_W: _isPressingW = true; break;
+            case EventKeyboard::KeyCode::KEY_S: _isPressingS = true; break;
+            case EventKeyboard::KeyCode::KEY_A: _isPressingA = true; break;
+            case EventKeyboard::KeyCode::KEY_D: _isPressingD = true; break;
+            default: break;
+        }
+    };
+
+    // 当键松开时：标记为 false
+    keyListener->onKeyReleased = [=](EventKeyboard::KeyCode code, Event* event){
+        switch(code){
+            case EventKeyboard::KeyCode::KEY_W: _isPressingW = false; break;
+            case EventKeyboard::KeyCode::KEY_S: _isPressingS = false; break;
+            case EventKeyboard::KeyCode::KEY_A: _isPressingA = false; break;
+            case EventKeyboard::KeyCode::KEY_D: _isPressingD = false; break;
+            default: break;
+        }
+    };
+
+    _eventDispatcher->addEventListenerWithSceneGraphPriority(keyListener, this);
+
+    // [重要] 开启移动更新的调度器 (每一帧都去检查按键状态)
+    this->schedule(CC_SCHEDULE_SELECTOR(HelloWorld::updatePlayerMovement));
+    // ==========================================
     // 3. 开启“自动开火”调度器
     // ==========================================
     // 语法：schedule(函数指针, 间隔时间, 重复次数, 延迟)
@@ -283,4 +314,31 @@ void HelloWorld::updateCollision(float dt)
     for (auto node : enemiesToDelete) {
         if(node->getParent()) node->removeFromParent();
     }
+}
+void HelloWorld::updatePlayerMovement(float dt)
+{
+    if (!_player) return;
+
+    // 如果没有任何按键按下，直接返回，省电
+    if (!_isPressingW && !_isPressingS && !_isPressingA && !_isPressingD) return;
+
+    Vec2 currentPos = _player->getPosition();
+    
+    // 移动速度 (像素/秒)
+    float speed = 500.0f * dt; 
+
+    // 根据按键状态改变位置
+    if (_isPressingW) currentPos.y += speed;
+    if (_isPressingS) currentPos.y -= speed;
+    if (_isPressingA) currentPos.x -= speed;
+    if (_isPressingD) currentPos.x += speed;
+
+    // --- 边界限制 (复制之前的逻辑，防止飞出屏幕) ---
+    auto visibleSize = Director::getInstance()->getVisibleSize();
+    if(currentPos.x < 0) currentPos.x = 0;
+    if(currentPos.x > visibleSize.width) currentPos.x = visibleSize.width;
+    if(currentPos.y < 0) currentPos.y = 0;
+    if(currentPos.y > visibleSize.height) currentPos.y = visibleSize.height;
+
+    _player->setPosition(currentPos);
 }
