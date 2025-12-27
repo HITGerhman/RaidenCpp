@@ -42,6 +42,8 @@ public:
 
     // [新增] 背景滚动逻辑函数
     void updateBackground(float dt);
+    // [新增] 统一处理游戏结束的函数
+    void doGameOver();
 };
 
 #endif // __HELLOWORLD_SCENE_H__

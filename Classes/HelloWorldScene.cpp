@@ -258,29 +258,23 @@ void HelloWorld::updateCollision(float dt)
 
     for (auto child : children)
     {
-        // ===========================
         // 1. 我方子弹 打 敌人
-        // ===========================
         if (child->getName() == "Bullet")
         {
             Rect bulletRect = Rect(child->getPositionX()-10, child->getPositionY()-10, 20, 20);
-            
             for (auto target : children)
             {
                 if (target->getName() == "Enemy")
                 {
                     Rect enemyRect = Rect(target->getPositionX()-20, target->getPositionY()-20, 40, 40);
-                    
                     if (bulletRect.intersectsRect(enemyRect))
                     {
                         bulletsToDelete.push_back(child);
                         enemiesToDelete.push_back(target);
                         
-                        // 加分
                         _score += 100;
                         _scoreLabel->setString("Score: " + std::to_string(_score));
 
-                        // 爆炸特效
                         auto boom = DrawNode::create();
                         boom->drawDot(Vec2::ZERO, 30, Color4F::ORANGE);
                         boom->setPosition(target->getPosition());
@@ -291,72 +285,36 @@ void HelloWorld::updateCollision(float dt)
             }
         }
         
-        // ===========================
         // 2. 敌人 撞 主角
-        // ===========================
         if (child->getName() == "Enemy" && _player)
         {
              Rect enemyRect = child->getBoundingBox();
              Rect playerRect = _player->getBoundingBox();
-             
-             // 缩小判定框
-             playerRect.origin.x += 10;
-             playerRect.size.width -= 20;
+             playerRect.origin.x += 10; playerRect.size.width -= 20;
 
-             // [修正] 这个 if 必须包含在上面的 if 里面！
              if (enemyRect.intersectsRect(playerRect))
              {
-                 _isGameOver = true;
-                 CCLOG("GAME OVER!");
-                 
-                 this->pause(); // 暂停游戏
-
-                 _player->setColor(Color3B::RED);
-                 _player->runAction(Blink::create(1.0f, 5));
-
-                 auto visibleSize = Director::getInstance()->getVisibleSize();
-                 auto labelGO = Label::createWithSystemFont("GAME OVER", "Arial", 64);
-                 labelGO->setPosition(visibleSize.width/2, visibleSize.height/2);
-                 labelGO->setTextColor(Color4B::RED);
-                 labelGO->enableOutline(Color4B::BLACK, 2);
-                 this->addChild(labelGO, 1000);
+                 // ✅ 直接调用封装好的函数
+                 this->doGameOver(); 
              }
-        } // <--- 修正：这里的括号要在逻辑处理完之后才闭合
+        }
 
-        // ===========================
         // 3. 敌方子弹 撞 主角
-        // ===========================
         if (child->getName() == "EnemyBullet" && _player)
         {
              Rect bulletRect = Rect(child->getPositionX()-5, child->getPositionY()-5, 10, 10);
-             
              Rect playerRect = _player->getBoundingBox();
-             playerRect.origin.x += 15;
-             playerRect.size.width -= 30;
-             playerRect.origin.y += 10;
-             playerRect.size.height -= 20;
+             playerRect.origin.x += 15; playerRect.size.width -= 30;
+             playerRect.origin.y += 10; playerRect.size.height -= 20;
 
              if (bulletRect.intersectsRect(playerRect))
              {
-                 _isGameOver = true;
-                 CCLOG("HIT BY BULLET! GAME OVER!");
-                 
-                 this->pause();
-
-                 _player->setColor(Color3B::RED);
-                 _player->runAction(Blink::create(1.0f, 5));
-
-                 auto visibleSize = Director::getInstance()->getVisibleSize();
-                 auto labelGO = Label::createWithSystemFont("GAME OVER", "Arial", 64);
-                 labelGO->setPosition(visibleSize.width/2, visibleSize.height/2);
-                 labelGO->setTextColor(Color4B::RED);
-                 labelGO->enableOutline(Color4B::BLACK, 2);
-                 this->addChild(labelGO, 1000);
+                 // ✅ 直接调用封装好的函数
+                 this->doGameOver();
              }
         }
     }
 
-    // 统一删除
     for (auto node : bulletsToDelete) { if(node->getParent()) node->removeFromParent(); }
     for (auto node : enemiesToDelete) { if(node->getParent()) node->removeFromParent(); }
 }
@@ -451,4 +409,60 @@ void HelloWorld::createEnemyBullet(Vec2 pos)
     auto remove = RemoveSelf::create();
     
     bullet->runAction(Sequence::create(move, remove, nullptr));
+}
+// [新增] 游戏结束处理函数
+void HelloWorld::doGameOver()
+{
+    // 1. 如果已经结束了，就别再执行了（防止重复触发）
+    if (_isGameOver) return;
+    _isGameOver = true;
+
+    CCLOG("GAME OVER!");
+
+    // 2. 核心大招：暂停当前场景！(定格画面)
+    this->pause();
+
+    // 3. 主角变红提示
+    if (_player) {
+        _player->setColor(Color3B::RED);
+    }
+
+    // 4. 显示 GAME OVER 大字
+    auto visibleSize = Director::getInstance()->getVisibleSize();
+    auto labelGO = Label::createWithSystemFont("GAME OVER", "Arial", 64);
+    labelGO->setPosition(visibleSize.width/2, visibleSize.height/2 + 50); // 稍微靠上
+    labelGO->setTextColor(Color4B::RED);
+    labelGO->enableOutline(Color4B::BLACK, 2);
+    this->addChild(labelGO, 1000);
+
+    // 5. 显示“点击重开”提示文字
+    auto labelRestart = Label::createWithSystemFont("Click to Restart", "Arial", 32);
+    labelRestart->setPosition(visibleSize.width/2, visibleSize.height/2 - 50); // 稍微靠下
+    labelRestart->setTextColor(Color4B::WHITE);
+    labelRestart->enableOutline(Color4B::BLACK, 1);
+    // 给这个提示加个永远闪烁的动作
+    labelRestart->runAction(RepeatForever::create(Blink::create(1.0f, 1))); 
+    this->addChild(labelRestart, 1000);
+
+    // ==========================================
+    // [核心] 添加“重开”监听器
+    // ==========================================
+    auto restartListener = EventListenerTouchOneByOne::create();
+    restartListener->setSwallowTouches(true); // 吞噬触摸，防止穿透
+    
+    restartListener->onTouchBegan = [=](Touch* t, Event* e){
+        // 一旦点击，执行场景切换
+        CCLOG("Restarting Game...");
+        
+        // 创建一个新的 HelloWorld 场景
+        auto newScene = HelloWorld::createScene();
+        
+        // 使用“淡入淡出”的转场特效来切换 (0.5秒)
+        Director::getInstance()->replaceScene(TransitionFade::create(0.5f, newScene));
+        
+        return true;
+    };
+
+    // 把监听器加到 EventDispatcher
+    _eventDispatcher->addEventListenerWithSceneGraphPriority(restartListener, this);
 }
