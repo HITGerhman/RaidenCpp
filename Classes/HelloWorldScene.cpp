@@ -20,18 +20,27 @@ bool HelloWorld::init()
     Vec2 origin = Director::getInstance()->getVisibleOrigin();
 
     // 1. Draw the Player (Triangle)
-    auto playerNode = DrawNode::create();
+    // auto playerNode = DrawNode::create();
     
-    Vec2 vertices[] = {
-        Vec2(0, 50),
-        Vec2(-30, -30),
-        Vec2(30, -30)
-    };
+    // Vec2 vertices[] = {
+    //     Vec2(0, 50),
+    //     Vec2(-30, -30),
+    //     Vec2(30, -30)
+    // };
     
-    playerNode->drawSolidPoly(vertices, 3, Color4F::YELLOW);
-    playerNode->setPosition(Vec2(visibleSize.width/2, 100)); // 初始位置放低一点
+    // playerNode->drawSolidPoly(vertices, 3, Color4F::YELLOW);
+    // playerNode->setPosition(Vec2(visibleSize.width/2, 100)); // 初始位置放低一点
+    // playerNode->setName("Player");
+    
+    // this->addChild(playerNode);
+    // ✅ 新代码 (使用图片)：
+    auto playerNode = Sprite::create("player.png"); 
+    
+    // 如果图片太大，可以缩放一下 (0.5 就是缩小一半)
+    playerNode->setScale(0.5f); 
+
+    playerNode->setPosition(Vec2(visibleSize.width/2, 100));
     playerNode->setName("Player");
-    
     this->addChild(playerNode);
     _player = playerNode; // <--- 关键：保存指针！
     // ==========================================
@@ -117,11 +126,13 @@ void HelloWorld::updateFire(float dt)
     // 如果主角没了，就不发子弹了
     if (!_player) return;
 
-    // --- A. 创建子弹 (画一个小黄点) ---
-    auto bullet = DrawNode::create();
-    bullet->drawDot(Vec2::ZERO, 5, Color4F::YELLOW); // 半径5的圆点
-
-    // [新增] 给子弹设置名字，这一步至关重要！
+    // // --- A. 创建子弹 (画一个小黄点) ---
+    // auto bullet = DrawNode::create();
+    // bullet->drawDot(Vec2::ZERO, 5, Color4F::YELLOW); // 半径5的圆点
+    // ✅ 新代码：使用子弹图片
+    auto bullet = Sprite::create("bullet.png");
+    bullet->setScale(0.5f); // 根据图片大小适当调整
+    // // [新增] 给子弹设置名字，这一步至关重要！
     bullet->setName("Bullet");
     
     // 子弹位置 = 飞机当前位置 + 一点点向上的偏移(机头位置)
@@ -155,10 +166,12 @@ void HelloWorld::spawnEnemy(float dt)
     auto visibleSize = Director::getInstance()->getVisibleSize();
 
     // 1. 画一个敌机 (红色倒三角)
-    auto enemy = DrawNode::create();
-    Vec2 vertices[] = { Vec2(0, -30), Vec2(-20, 20), Vec2(20, 20) }; // 倒过来的三角形
-    enemy->drawSolidPoly(vertices, 3, Color4F::RED); // 红色
-    
+    // auto enemy = DrawNode::create();
+    // Vec2 vertices[] = { Vec2(0, -30), Vec2(-20, 20), Vec2(20, 20) }; // 倒过来的三角形
+    // enemy->drawSolidPoly(vertices, 3, Color4F::RED); // 红色
+
+    auto enemy = Sprite::create("enemy.png");
+    enemy->setScale(0.5f);
     // 给它设个名字，或者 tag，以后碰撞检测要用
     enemy->setName("Enemy");
 
