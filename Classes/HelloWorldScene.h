@@ -17,6 +17,8 @@ public:
     void spawnEnemy(float dt);
     // [新增] 碰撞检测主循环
     void updateCollision(float dt);
+    // [新增] 在指定位置生成一颗敌方子弹
+    void createEnemyBullet(cocos2d::Vec2 pos);
 
     private:
     // 新增：保存主角的指针，方便在其他函数里访问它
@@ -33,6 +35,10 @@ public:
     // [新增] 两张背景图
     cocos2d::Sprite* _bg1;
     cocos2d::Sprite* _bg2;
+    // [新增] 游戏状态变量
+    int _score;                  // 当前分数
+    bool _isGameOver;            // 游戏是否结束
+    cocos2d::Label* _scoreLabel; // 显示分数的文字标签
 
     // [新增] 背景滚动逻辑函数
     void updateBackground(float dt);
