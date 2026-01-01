@@ -57,16 +57,30 @@ void Enemy::startMovement(float startX) {
 }
 
 void Enemy::startFiring(Scene* scene) {
-    auto wait = DelayTime::create(GameConfig::ENEMY_FIRE_INTERVAL);
+    // 使用递归方式实现随机射击间隔
+    scheduleRandomFire(scene);
+}
+
+void Enemy::scheduleRandomFire(Scene* scene) {
+    // 生成随机射击间隔
+    float randomInterval = RandomHelper::random_real(
+        GameConfig::ENEMY_FIRE_INTERVAL_MIN,
+        GameConfig::ENEMY_FIRE_INTERVAL_MAX
+    );
+    
+    auto wait = DelayTime::create(randomInterval);
     auto fire = CallFunc::create([=]() {
         if (getParent() && scene) {
             auto bullet = EnemyBullet::create(getPosition());
             scene->addChild(bullet, -1);
+            
+            // 继续调度下一次射击（递归）
+            scheduleRandomFire(scene);
         }
     });
     
     auto fireSequence = Sequence::create(wait, fire, nullptr);
-    runAction(RepeatForever::create(fireSequence));
+    runAction(fireSequence);
 }
 
 Rect Enemy::getCollisionRect() const {

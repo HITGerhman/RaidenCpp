@@ -45,6 +45,12 @@ private:
      * @param scene 场景对象
      */
     void startFiring(cocos2d::Scene* scene);
+    
+    /**
+     * @brief 调度下一次随机射击
+     * @param scene 场景对象
+     */
+    void scheduleRandomFire(cocos2d::Scene* scene);
 };
 
 #endif // __ENEMY_H__

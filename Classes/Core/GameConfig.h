@@ -29,7 +29,8 @@ namespace GameConfig {
     constexpr float ENEMY_SPAWN_INTERVAL = 1.0f;    // 敌人生成间隔 (秒)
     constexpr float ENEMY_SCALE = 0.5f;             // 敌人缩放
     constexpr float ENEMY_SPEED = 200.0f;           // 敌人移动速度 (像素/秒)
-    constexpr float ENEMY_FIRE_INTERVAL = 0.3f;     // 敌人射击间隔 (秒)
+    constexpr float ENEMY_FIRE_INTERVAL_MIN = 0.2f; // 敌人射击最小间隔 (秒) - 快速射击
+    constexpr float ENEMY_FIRE_INTERVAL_MAX = 0.5f; // 敌人射击最大间隔 (秒) - 平均约0.35秒
     constexpr float ENEMY_COLLISION_SIZE = 40.0f;   // 敌人碰撞体大小
     constexpr float ENEMY_SPAWN_MARGIN = 30.0f;     // 敌人生成边距
     constexpr float ENEMY_MOVE_DURATION = 2.0f;     // 敌人飞行时间
