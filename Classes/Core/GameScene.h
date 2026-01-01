@@ -15,6 +15,7 @@
 class Player;
 class InputManager;
 class BackgroundScroller;
+class Boss;
 
 /**
  * @brief 游戏主场景类
@@ -40,11 +41,13 @@ private:
     Player* m_player;
     InputManager* m_inputManager;
     BackgroundScroller* m_backgroundScroller;
+    Boss* m_boss;
     
     // ==================== 游戏状态 ====================
     GameState m_gameState;
     int m_score;
     cocos2d::Label* m_scoreLabel;
+    bool m_bossSpawned;
     
     // ==================== 初始化方法 ====================
     
@@ -136,6 +139,16 @@ private:
      * @brief 设置重开监听器
      */
     void setupRestartListener();
+    
+    /**
+     * @brief 生成Boss
+     */
+    void spawnBoss();
+    
+    /**
+     * @brief 检查是否达到Boss触发分数
+     */
+    void checkBossTrigger();
 };
 
 #endif // __GAME_SCENE_H__

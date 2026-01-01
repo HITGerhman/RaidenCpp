@@ -66,6 +66,7 @@ list(APPEND GAME_SOURCE
      Classes/Core/GameScene.cpp
      Classes/Entities/Player.cpp
      Classes/Entities/Enemy.cpp
+     Classes/Entities/Boss.cpp
      Classes/Entities/Bullet.cpp
      Classes/Entities/PlayerBullet.cpp
      Classes/Entities/EnemyBullet.cpp
@@ -80,6 +81,7 @@ list(APPEND GAME_HEADER
      Classes/Core/GameConfig.h
      Classes/Entities/Player.h
      Classes/Entities/Enemy.h
+     Classes/Entities/Boss.h
      Classes/Entities/Bullet.h
      Classes/Entities/PlayerBullet.h
      Classes/Entities/EnemyBullet.h

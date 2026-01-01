@@ -64,12 +64,23 @@ namespace GameConfig {
     constexpr float EXPLOSION_DURATION = 0.1f;      // 爆炸持续时间
     constexpr float SCENE_TRANSITION_DURATION = 0.5f; // 场景切换时间
     
+    // ==================== Boss 配置 ====================
+    constexpr int BOSS_TRIGGER_SCORE = 1000;        // Boss出现所需分数
+    constexpr float BOSS_SCALE = 1.5f;              // Boss缩放（巨大）
+    constexpr float BOSS_COLLISION_SIZE = 100.0f;   // Boss碰撞体大小
+    constexpr int BOSS_MAX_HEALTH = 100;            // Boss最大血量
+    constexpr float BOSS_SHIELD_DURATION = 5.0f;    // 护盾持续时间（秒）
+    constexpr float BOSS_BULLET_SPEED = 400.0f;     // Boss子弹速度
+    constexpr float BOSS_PATTERN_SWITCH_INTERVAL = 3.0f; // 攻击模式切换间隔
+    constexpr int BOSS_DEFEAT_SCORE = 5000;         // 击败Boss奖励分数
+    
     // ==================== 实体标签名 ====================
     namespace Tags {
         constexpr const char* PLAYER = "Player";
         constexpr const char* BULLET = "Bullet";
         constexpr const char* ENEMY = "Enemy";
         constexpr const char* ENEMY_BULLET = "EnemyBullet";
+        constexpr const char* BOSS = "Boss";
     }
 }
 

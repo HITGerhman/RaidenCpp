@@ -7,6 +7,7 @@
 #include "Entities/Player.h"
 #include "Entities/PlayerBullet.h"
 #include "Entities/Enemy.h"
+#include "Entities/Boss.h"
 #include "Systems/InputManager.h"
 #include "Systems/CollisionManager.h"
 #include "Systems/BackgroundScroller.h"
@@ -28,6 +29,8 @@ bool GameScene::init() {
     m_gameState = GameState::RUNNING;
     m_score = GameConfig::INITIAL_SCORE;
     m_player = nullptr;
+    m_boss = nullptr;
+    m_bossSpawned = false;
     m_inputManager = new InputManager();
     m_backgroundScroller = new BackgroundScroller();
     
@@ -98,6 +101,10 @@ void GameScene::updateFire(float dt) {
 
 void GameScene::updateSpawnEnemy(float dt) {
     if (m_gameState != GameState::RUNNING) return;
+    
+    // Boss出现后停止生成普通敌人
+    if (m_bossSpawned) return;
+    
     spawnEnemy();
 }
 
@@ -110,6 +117,7 @@ void GameScene::updateCollision(float dt) {
         handleGameOver();
     } else {
         updateScoreDisplay();
+        checkBossTrigger();  // 检查是否触发Boss战
     }
 }
 
@@ -193,5 +201,50 @@ void GameScene::setupRestartListener() {
     };
     
     getEventDispatcher()->addEventListenerWithSceneGraphPriority(restartListener, this);
+}
+
+void GameScene::checkBossTrigger() {
+    // 检查是否达到Boss触发分数
+    if (!m_bossSpawned && m_score >= GameConfig::BOSS_TRIGGER_SCORE) {
+        spawnBoss();
+    }
+}
+
+void GameScene::spawnBoss() {
+    if (m_bossSpawned) return;
+    
+    m_bossSpawned = true;
+    
+    // 清除所有普通敌人
+    auto enemies = this->getChildren();
+    for (auto child : enemies) {
+        if (child->getName() == GameConfig::Tags::ENEMY) {
+            child->removeFromParent();
+        }
+    }
+    
+    // 生成Boss
+    m_boss = Boss::createAndStart(this);
+    if (m_boss) {
+        this->addChild(m_boss, 1);
+        
+        // 显示Boss警告
+        auto visibleSize = MathHelper::getVisibleSize();
+        auto warningLabel = Label::createWithSystemFont(
+            "WARNING! BOSS APPROACHING!", 
+            "Arial", 
+            48
+        );
+        warningLabel->setPosition(visibleSize.width / 2, visibleSize.height / 2);
+        warningLabel->setTextColor(Color4B::RED);
+        warningLabel->enableOutline(Color4B::BLACK, 2);
+        this->addChild(warningLabel, 1000);
+        
+        // 警告文字闪烁后消失
+        auto blink = Blink::create(2.0f, 6);
+        auto fadeOut = FadeOut::create(0.5f);
+        auto remove = RemoveSelf::create();
+        warningLabel->runAction(Sequence::create(blink, fadeOut, remove, nullptr));
+    }
 }
 

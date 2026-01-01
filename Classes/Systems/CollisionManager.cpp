@@ -4,6 +4,7 @@
 
 #include "CollisionManager.h"
 #include "Entities/Player.h"
+#include "Entities/Boss.h"
 #include "Core/GameConfig.h"
 #include "Utils/MathHelper.h"
 
@@ -39,6 +40,7 @@ void CollisionManager::checkBulletEnemyCollision(Scene* scene, int& score) {
                 GameConfig::BULLET_COLLISION_SIZE
             );
             
+            // 检测普通敌人
             for (auto target : children) {
                 if (target->getName() == GameConfig::Tags::ENEMY) {
                     Rect enemyRect = Rect(
@@ -54,6 +56,24 @@ void CollisionManager::checkBulletEnemyCollision(Scene* scene, int& score) {
                         
                         score += GameConfig::SCORE_PER_KILL;
                         createExplosion(scene, target->getPosition());
+                    }
+                }
+                // 检测Boss
+                else if (target->getName() == GameConfig::Tags::BOSS) {
+                    Boss* boss = dynamic_cast<Boss*>(target);
+                    if (boss) {
+                        Rect bossRect = boss->getCollisionRect();
+                        
+                        if (MathHelper::checkCollision(bulletRect, bossRect)) {
+                            bulletsToDelete.push_back(child);
+                            
+                            // Boss受到伤害
+                            if (boss->takeDamage(1)) {
+                                // Boss被击败
+                                score += GameConfig::BOSS_DEFEAT_SCORE;
+                                createExplosion(scene, boss->getPosition());
+                            }
+                        }
                     }
                 }
             }
@@ -72,7 +92,7 @@ bool CollisionManager::checkEnemyPlayerCollision(Scene* scene, Player* player) {
     auto children = scene->getChildren();
     
     for (auto child : children) {
-        if (child->getName() == GameConfig::Tags::ENEMY) {
+        if (child->getName() == GameConfig::Tags::ENEMY || child->getName() == GameConfig::Tags::BOSS) {
             Rect enemyRect = child->getBoundingBox();
             Rect playerRect = player->getCollisionRect();
             
