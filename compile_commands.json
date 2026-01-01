@@ -1,0 +1,8 @@
+[
+  {
+    "directory": "D:/code/cocos/RaidenCpp/build",
+    "command": "cl.exe /c /I\"D:/code/cocos/RaidenCpp/Classes\" /I\"D:/code/cocos/RaidenCpp/cocos2d/cocos\" /I\"D:/code/cocos/RaidenCpp/cocos2d/cocos/audio/include\" /I\"D:/code/cocos/RaidenCpp/cocos2d/extensions\" /I\"D:/code/cocos/RaidenCpp/cocos2d/cocos/platform\" /I\"D:/code/cocos/RaidenCpp/cocos2d/cocos/editor-support\" /DWIN32 /D_WIN32 /D_UNICODE /DUNICODE /utf-8 Classes/Core/GameScene.cpp",
+    "file": "D:/code/cocos/RaidenCpp/Classes/Core/GameScene.cpp"
+  }
+]
+

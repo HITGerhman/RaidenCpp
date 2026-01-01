@@ -29,6 +29,9 @@ set(APP_NAME RaidenCpp)
 
 project(${APP_NAME})
 
+# 导出编译命令供 IDE 使用
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
 # 强制 MSVC 编译器使用 UTF-8 编码，解决乱码问题
 add_compile_options("$<$<CXX_COMPILER_ID:MSVC>:/utf-8>")
 
@@ -60,11 +63,31 @@ endif()
 # add cross-platforms source files and header files 
 list(APPEND GAME_SOURCE
      Classes/AppDelegate.cpp
-     Classes/HelloWorldScene.cpp
+     Classes/Core/GameScene.cpp
+     Classes/Entities/Player.cpp
+     Classes/Entities/Enemy.cpp
+     Classes/Entities/Bullet.cpp
+     Classes/Entities/PlayerBullet.cpp
+     Classes/Entities/EnemyBullet.cpp
+     Classes/Systems/CollisionManager.cpp
+     Classes/Systems/InputManager.cpp
+     Classes/Systems/BackgroundScroller.cpp
+     Classes/Utils/MathHelper.cpp
      )
 list(APPEND GAME_HEADER
      Classes/AppDelegate.h
-     Classes/HelloWorldScene.h
+     Classes/Core/GameScene.h
+     Classes/Core/GameConfig.h
+     Classes/Entities/Player.h
+     Classes/Entities/Enemy.h
+     Classes/Entities/Bullet.h
+     Classes/Entities/PlayerBullet.h
+     Classes/Entities/EnemyBullet.h
+     Classes/Systems/CollisionManager.h
+     Classes/Systems/InputManager.h
+     Classes/Systems/BackgroundScroller.h
+     Classes/Utils/MathHelper.h
+     Classes/Utils/GameTypes.h
      )
 
 if(ANDROID)
@@ -135,6 +158,7 @@ endif()
 target_link_libraries(${APP_NAME} cocos2d)
 target_include_directories(${APP_NAME}
         PRIVATE Classes
+        PRIVATE ${COCOS2DX_ROOT_PATH}/cocos
         PRIVATE ${COCOS2DX_ROOT_PATH}/cocos/audio/include/
 )
 
